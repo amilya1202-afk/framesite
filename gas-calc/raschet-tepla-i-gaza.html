@@ -99,10 +99,9 @@ aside .card{position:sticky;top:12px}
   <button data-tab="req" class="active">1. Реквизиты</button>
   <button data-tab="src">2. Исходные данные</button>
   <button data-tab="rooms">3. Здания / помещения</button>
-  <button data-tab="hw">4. ГВС</button>
-  <button data-tab="boil">5. Газовое оборудование</button>
-  <button data-tab="months">6. По месяцам</button>
-  <button data-tab="res">7. Результаты и печать</button>
+  <button data-tab="boil">4. Газовое оборудование</button>
+  <button data-tab="months">5. По месяцам</button>
+  <button data-tab="res">6. Результаты и печать</button>
 </nav>
 
 <div class="wrap">
@@ -116,13 +115,6 @@ aside .card{position:sticky;top:12px}
 
   <!-- 2. Исходные данные -->
   <section class="tab" id="tab-src">
-    <div class="card"><h2>Выполнять расчёт для</h2>
-      <div class="checks">
-        <label><input type="checkbox" data-path="use.heat"> Отопление</label>
-        <label><input type="checkbox" data-path="use.vent"> Вентиляция</label>
-        <label><input type="checkbox" data-path="use.hw"> Горячее водоснабжение</label>
-      </div>
-    </div>
     <div class="card"><h2>Климатические данные района строительства <span class="hint">СП 131.13330.2020 «Строительная климатология»</span></h2>
       <div class="f wide"><span class="l">Населённый пункт из справочника</span>
         <span class="i"><select id="citySelect"></select></span></div>
@@ -135,25 +127,14 @@ aside .card{position:sticky;top:12px}
       </div>
     </div>
     <div class="card"><h2>Коэффициенты и топливо</h2><div class="grid2" id="formParams"></div></div>
-    <div class="card" id="cardVent"><h2>Вентиляция</h2><div class="grid2" id="formVent"></div></div>
   </section>
 
   <!-- 3. Помещения -->
   <section class="tab" id="tab-rooms">
-    <div class="card"><h2>Здания (помещения, литеры) <span class="hint">qₒ, qᵥ — удельные тепловые характеристики, ккал/(м³·ч·°C)</span></h2>
+    <div class="card"><h2>Здания (помещения, литеры) <span class="hint">qₒ — удельная отопительная характеристика, ккал/(м³·ч·°C)</span></h2>
       <div class="scroll"><table class="t" id="roomsTable"></table></div>
       <div class="row-actions"><button id="btnAddRoom">+ Добавить здание</button></div>
-      <p class="note">Qₒ.max = α · V · qₒ · (tв − tн.р) · (1 + Kи.р);&nbsp; Qᵥ.max = V · qᵥ · (tв − tн.в). Если вентиляции нет — оставьте qᵥ = 0.</p>
-    </div>
-  </section>
-
-  <!-- 4. ГВС -->
-  <section class="tab" id="tab-hw">
-    <div class="card" id="hwOff" style="display:none"><div class="warn" style="margin:0">Расчёт ГВС выключен. Включите «Горячее водоснабжение» на вкладке «Исходные данные».</div></div>
-    <div class="card"><h2>Параметры горячего водоснабжения</h2><div class="grid2" id="formHw"></div></div>
-    <div class="card"><h2>Потребители горячей воды <span class="hint">нормы — по СП 30.13330.2020, прил. А</span></h2>
-      <div class="scroll"><table class="t" id="hwTable"></table></div>
-      <div class="row-actions"><button id="btnAddHw">+ Добавить потребителя</button></div>
+      <p class="note">Qₒ.max = α · V · qₒ · (tв − tн.р) · (1 + Kи.р)</p>
     </div>
   </section>
 
@@ -190,7 +171,7 @@ aside .card{position:sticky;top:12px}
 
 <aside><div class="card"><h2>Итоги</h2><div id="summary"></div></div></aside>
 </div>
-<div class="footer-note">Программа работает без интернета: файл можно переносить на флешке и открывать в любом браузере (Chrome, Edge, Яндекс, Firefox). Методика: МДК 4-05.2004, СП 131.13330.2020, СП 30.13330.2020.</div>
+<div class="footer-note">Программа работает без интернета: файл можно переносить на флешке и открывать в любом браузере (Chrome, Edge, Яндекс, Firefox). Методика: МДК 4-05.2004, СП 131.13330.2020.</div>
 
 <script>
 "use strict";
@@ -265,13 +246,9 @@ function defaultState(){
       director:'', gip:'', executor:'', city:'', year: String(new Date().getFullYear()),
       ministry:'', readiness:'Проектируемое', basisDoc:'', fuelType:'Природный газ', fuelReason:'',
       yearStart:'', yearDesign:'' },
-    use: { heat:true, vent:false, hw:false },
-    climate: { city:c[1], tDesign:c[2], tVent:c[2], nHeat:c[3], tAvgHeat:c[4], months:c[5].slice() },
+    climate: { city:c[1], tDesign:c[2], nHeat:c[3], tAvgHeat:c[4], months:c[5].slice() },
     params: { alphaAuto:true, alpha:alphaFor(c[2]), kInf:0, eff:92, ownNeeds:2, netLoss:0, qn:8000 },
-    vent: { z:8, weekends:30 },
-    hw: { T:24, tcw:5, tcs:15, beta:0.8, ktp:0.2, nSummerAuto:true, nSummer:350-c[3],
-      consumers:[{ name:'Жители', unit:'чел.', count:4, qDay:105, qHour:10 }] },
-    rooms: [{ name:'Литер А', V:1000, tIn:20, qo:0.45, qv:0 }],
+    rooms: [{ name:'Литер А', V:1000, tIn:20, qo:0.45 }],
     boilers: [],
     monthsManual: false,
     monthsData: null,
@@ -317,26 +294,14 @@ function autoMonths(months, nHeat, tAvg){
   for (const [t,d] of order){ const m = starts.findIndex((s,k) => d >= s && d < s + MDAYS[k]); cnt[m]++; st[m] += t; }
   return MDAYS.map((days,i) => ({ days, nHeat: cnt[i], tHeat: cnt[i] ? Math.round((st[i]/cnt[i] + delta)*10)/10 : null }));
 }
-// Летние сутки работы ГВС по месяцам (ремонтный перерыв — с июля)
-function summerDays(rows, nSummer){
-  const free = rows.map(r => r.days - r.nHeat);
-  let cut = sum(free) - Math.max(0, Math.round(nSummer));
-  const order = [6,7,5,8,4,9,3,10,2,11,1,0];
-  const res = free.slice();
-  for (const m of order){ if (cut <= 0) break; const k = Math.min(cut, res[m]); res[m] -= k; cut -= k; }
-  return res;
-}
 function monthsFor(s){
   const c = s.climate;
-  const nSummer = s.hw.nSummerAuto ? Math.max(0, 350 - Math.round(N(c.nHeat))) : N(s.hw.nSummer);
   const auto = autoMonths(c.months.map(N), N(c.nHeat), N(c.tAvgHeat));
-  const autoS = summerDays(auto, nSummer);
-  auto.forEach((r,i) => r.nSummer = autoS[i]);
   if (s.monthsManual && Array.isArray(s.monthsData)){
     return { rows: MDAYS.map((days,i) => { const d = s.monthsData[i] || {};
-      return { days, nHeat: N(d.nHeat), tHeat: d.tHeat === '' || d.tHeat == null ? null : N(d.tHeat), nSummer: N(d.nSummer) }; }), auto, nSummer };
+      return { days, nHeat: N(d.nHeat), tHeat: d.tHeat === '' || d.tHeat == null ? null : N(d.tHeat) }; }), auto };
   }
-  return { rows: auto, auto, nSummer };
+  return { rows: auto, auto };
 }
 function boilerEff(s){
   const b = s.boilers.filter(x => N(x.P) > 0 && N(x.n) > 0 && N(x.eff) > 0);
@@ -348,49 +313,28 @@ function boilerEff(s){
 function distribute(value, weights){ const W = sum(weights); return weights.map(w => W > 0 ? value * w / W : 0); }
 
 function compute(s){
-  const u = s.use, c = s.climate, p = s.params, v = s.vent, hw = s.hw;
-  const tnr = N(c.tDesign), tnv = N(c.tVent), no = Math.round(N(c.nHeat)), tav = N(c.tAvgHeat);
+  const c = s.climate, p = s.params;
+  const tnr = N(c.tDesign), no = Math.round(N(c.nHeat)), tav = N(c.tAvgHeat);
   const alpha = p.alphaAuto ? alphaFor(tnr) : N(p.alpha);
-  const kInf = N(p.kInf), z = N(v.z), wk = N(v.weekends);
+  const kInf = N(p.kInf);
   const M = monthsFor(s), rows = M.rows;
   const warnings = [];
-  const ventDays = Math.max(0, no - wk);
 
   const rooms = s.rooms.map(r => {
-    const V = N(r.V), tin = N(r.tIn), qo = N(r.qo), qv = N(r.qv);
-    const Qo = u.heat ? alpha * V * qo * (tin - tnr) * (1 + kInf) : 0;
+    const V = N(r.V), tin = N(r.tIn), qo = N(r.qo);
+    const Qo = alpha * V * qo * (tin - tnr) * (1 + kInf);
     const Qo_avg = tin !== tnr ? Qo * (tin - tav) / (tin - tnr) : 0;
     const Qo_year = Qo_avg * 24 * no / 1e6;
-    const Qv = u.vent ? V * qv * (tin - tnv) : 0;
-    const Qv_avg = tin !== tnv ? Qv * (tin - tav) / (tin - tnv) : 0;
-    const Qv_year = Qv_avg * z * ventDays / 1e6;
     const w = rows.map(m => m.tHeat == null ? 0 : m.nHeat * Math.max(0, tin - m.tHeat));
-    return { name: r.name, V, tin, qo, qv, Qo, Qo_avg, Qo_year, Qv, Qv_avg, Qv_year,
-      Qo_m: distribute(Qo_year, w), Qv_m: distribute(Qv_year, w) };
+    return { name: r.name, V, tin, qo, Qo, Qo_avg, Qo_year, Qo_m: distribute(Qo_year, w) };
   });
-
-  // ГВС
-  const cons = hw.consumers.map(x => ({ name:x.name, unit:x.unit, count:N(x.count), qDay:N(x.qDay), qHour:N(x.qHour) }));
-  const Gd = sum(cons.map(x => x.count * x.qDay)), Gh = sum(cons.map(x => x.count * x.qHour));
-  const T = N(hw.T), tcw = N(hw.tcw), tcs = N(hw.tcs), beta = N(hw.beta), ktp = N(hw.ktp);
-  const nS = M.nSummer;
-  const on = u.hw;
-  const Qhw_w = on && T > 0 ? Gd * (55 - tcw) * (1 + ktp) / T : 0;
-  const Qhw_max = on ? Gh * (55 - tcw) * (1 + ktp) : 0;
-  const Qhw_s = (55 - tcw) ? Qhw_w * beta * (55 - tcs) / (55 - tcw) : 0;
-  const Qhw_year_w = Qhw_w * T * no / 1e6, Qhw_year_s = Qhw_s * T * nS / 1e6;
-  const Qhw_year = Qhw_year_w + Qhw_year_s;
-  const hw_m_w = distribute(Qhw_year_w, rows.map(m => m.nHeat));
-  const hw_m_s = distribute(Qhw_year_s, rows.map(m => m.nSummer));
-  const hw_m = hw_m_w.map((x,i) => x + hw_m_s[i]);
 
   const be = boilerEff(s), eff = be.eff;
   const qn = N(p.qn), own = N(p.ownNeeds), loss = N(p.netLoss);
   const k = 1 + (own + loss) / 100;
   const Qo = sum(rooms.map(r => r.Qo)), Qo_avg = sum(rooms.map(r => r.Qo_avg)), Qo_year = sum(rooms.map(r => r.Qo_year));
-  const Qv = sum(rooms.map(r => r.Qv)), Qv_avg = sum(rooms.map(r => r.Qv_avg)), Qv_year = sum(rooms.map(r => r.Qv_year));
-  const Qmax = Qo + Qv + Qhw_max, QmaxL = Qmax * k;
-  const Qyear = Qo_year + Qv_year + Qhw_year, QyearL = Qyear * k;
+  const Qmax = Qo, QmaxL = Qmax * k;
+  const Qyear = Qo_year, QyearL = Qyear * k;
   const denom = qn * eff / 100;
   const gasH = denom > 0 ? QmaxL / denom : 0;
   const gasY = denom > 0 ? QyearL * 1e6 / denom : 0;   // м³/год
@@ -401,25 +345,21 @@ function compute(s){
   const gasEquip = sum(boilers.map(b => b.eff > 0 && qn > 0 ? b.n * b.P * 860 / (qn * b.eff / 100) : 0));
 
   const monthly = rows.map((m,i) => {
-    const heat = sum(rooms.map(r => r.Qo_m[i])), vent = sum(rooms.map(r => r.Qv_m[i])), hot = hw_m[i];
-    const total = heat + vent + hot, totalL = total * k;
+    const heat = sum(rooms.map(r => r.Qo_m[i])), totalL = heat * k;
     const gas = denom > 0 ? totalL * 1e6 / denom / 1000 : 0;
-    return { ...m, heat, vent, hot, total, totalL, gas, tut: gas * 1000 * qn / 7e6 };
+    return { ...m, heat, totalL, gas, tut: gas * 1000 * qn / 7e6 };
   });
 
   if (s.monthsManual){
     const ns = sum(rows.map(r => r.nHeat));
     if (ns !== no) warnings.push(`Сумма суток отопления по месяцам (${ns}) не равна продолжительности отопительного периода (${no}).`);
-    if (on){ const ss = sum(rows.map(r => r.nSummer)); if (ss !== Math.round(nS)) warnings.push(`Сумма летних суток ГВС по месяцам (${ss}) не равна заданной (${Math.round(nS)}).`); }
   }
-  if (!u.heat && !u.vent && !u.hw) warnings.push('Не выбран ни один вид нагрузки (вкладка «Исходные данные»).');
   if (Pinst > 0 && Pinst * 0.00086 < QmaxL * 1e-6) warnings.push('Установленная мощность котлов меньше расчётной максимальной нагрузки.');
   if (eff <= 0) warnings.push('Не задан КПД котлов.');
 
-  return { alpha, tnr, tnv, no, tav, kInf, z, wk, ventDays, rooms, cons, Gd, Gh, T, tcw, tcs, beta, ktp, nS,
-    Qhw_w, Qhw_max, Qhw_s, Qhw_year_w, Qhw_year_s, Qhw_year,
+  return { alpha, tnr, no, tav, kInf, rooms,
     eff, effFromBoilers: be.fromBoilers, qn, own, loss, k,
-    Qo, Qo_avg, Qo_year, Qv, Qv_avg, Qv_year, Qmax, QmaxL, Qyear, QyearL, gasH, gasY, tut,
+    Qo, Qo_avg, Qo_year, Qmax, QmaxL, Qyear, QyearL, gasH, gasY, tut,
     boilers, Pinst, gasEquip, monthly, autoRows: M.auto, warnings,
     tCold: Math.min(...c.months.map(N)) };
 }
@@ -475,8 +415,7 @@ function buildForms(){
     F('Год выхода на проектную мощность','req.yearDesign',{wide:1});
   document.getElementById('formClimate').innerHTML =
     '<div>' + F('Населённый пункт (для отчёта)','climate.city') +
-      F('Расчётная температура для отопления','climate.tDesign',{num:1,unit:'°C',sub:'tн.р — наиболее холодной пятидневки, обесп. 0,92'}) +
-      F('Расчётная температура для вентиляции','climate.tVent',{num:1,unit:'°C',sub:'tн.в'}) + '</div>' +
+      F('Расчётная температура для отопления','climate.tDesign',{num:1,unit:'°C',sub:'tн.р — наиболее холодной пятидневки, обесп. 0,92'}) + '</div>' +
     '<div>' + F('Продолжительность отопительного периода','climate.nHeat',{num:1,unit:'сут',sub:'nо — сутки со ср. t ≤ 8 °C'}) +
       F('Средняя температура отопительного периода','climate.tAvgHeat',{num:1,unit:'°C',sub:'tср.о'}) + '</div>';
   document.getElementById('monthTemps').innerHTML = MONTHS.map((m,i) =>
@@ -488,16 +427,6 @@ function buildForms(){
     '<div>' + F('Собственные нужды котельной','params.ownNeeds',{num:1,unit:'%'}) +
       F('Потери в тепловых сетях','params.netLoss',{num:1,unit:'%'}) +
       F('Низшая теплота сгорания газа Qнр','params.qn',{num:1,unit:'ккал/м³'}) + '</div>';
-  document.getElementById('formVent').innerHTML =
-    '<div>' + F('Время работы вентиляции в сутки','vent.z',{num:1,unit:'ч'}) + '</div>' +
-    '<div>' + F('Выходные и праздничные дни за отопит. период','vent.weekends',{num:1,unit:'сут'}) + '</div>';
-  document.getElementById('formHw').innerHTML =
-    '<div>' + F('Время работы системы ГВС в сутки','hw.T',{num:1,unit:'ч',sub:'T'}) +
-      F('Температура холодной воды зимой','hw.tcw',{num:1,unit:'°C'}) +
-      F('Температура холодной воды летом','hw.tcs',{num:1,unit:'°C'}) + '</div>' +
-    '<div>' + F('Коэфф. изменения расхода летом β','hw.beta',{num:1,sub:'0,8; для курортных/южных — 1,0'}) +
-      F('Коэфф. потерь тепла трубопроводами Kт.п','hw.ktp',{num:1,sub:'0,2…0,35 (в формуле 1 + Kт.п)'}) +
-      F('Работа ГВС в летний период','hw.nSummer',{num:1,unit:'сут',auto:'hw.nSummerAuto',sub:'авто: 350 − nо'}) + '</div>';
 }
 
 function bind(root){
@@ -522,31 +451,17 @@ function refreshInputs(root = document){
 
 /* ---- Таблицы ---- */
 function renderRooms(){
-  const vent = S.use.vent;
-  let h = `<tr><th>№</th><th>Наименование (литер)</th><th>Объём V, м³</th><th>tв, °C</th><th>qₒ</th>${vent ? '<th>qᵥ</th>' : ''}<th>Qₒ.max, ккал/ч</th>${vent ? '<th>Qᵥ.max, ккал/ч</th>' : ''}<th>Qₒ год, Гкал</th><th></th></tr>`;
+  let h = '<tr><th>№</th><th>Наименование (литер)</th><th>Объём V, м³</th><th>tв, °C</th><th>qₒ</th><th>Qₒ.max, ккал/ч</th><th>Qₒ ср., ккал/ч</th><th>Qₒ год, Гкал</th><th></th></tr>';
   S.rooms.forEach((r,i) => {
     h += `<tr><td class="n">${i+1}</td><td><input data-path="rooms.${i}.name"></td>
       <td style="width:110px"><input data-path="rooms.${i}.V" inputmode="decimal"></td>
       <td style="width:70px"><input data-path="rooms.${i}.tIn" inputmode="decimal"></td>
       <td style="width:80px"><input data-path="rooms.${i}.qo" inputmode="decimal"></td>
-      ${vent ? `<td style="width:80px"><input data-path="rooms.${i}.qv" inputmode="decimal"></td>` : ''}
-      <td class="n" id="rQo${i}"></td>${vent ? `<td class="n" id="rQv${i}"></td>` : ''}<td class="n" id="rQy${i}"></td>
+      <td class="n" id="rQo${i}"></td><td class="n" id="rQa${i}"></td><td class="n" id="rQy${i}"></td>
       <td><button class="del" data-del="rooms" data-i="${i}" title="Удалить">×</button></td></tr>`;
   });
-  h += `<tr class="total"><td></td><td>Итого</td><td class="n" id="rVsum"></td><td></td><td></td>${vent ? '<td></td>' : ''}<td class="n" id="rQoSum"></td>${vent ? '<td class="n" id="rQvSum"></td>' : ''}<td class="n" id="rQySum"></td><td></td></tr>`;
+  h += '<tr class="total"><td></td><td>Итого</td><td class="n" id="rVsum"></td><td></td><td></td><td class="n" id="rQoSum"></td><td class="n" id="rQaSum"></td><td class="n" id="rQySum"></td><td></td></tr>';
   const t = document.getElementById('roomsTable'); t.innerHTML = h; bind(t); refreshInputs(t);
-}
-function renderHw(){
-  let h = '<tr><th>№</th><th>Потребитель</th><th>Ед. изм.</th><th>Кол-во, m</th><th>Норма в сутки, л</th><th>Норма в час наиб. водопотребления, л</th><th></th></tr>';
-  S.hw.consumers.forEach((r,i) => {
-    h += `<tr><td class="n">${i+1}</td><td><input data-path="hw.consumers.${i}.name"></td>
-      <td style="width:90px"><input data-path="hw.consumers.${i}.unit"></td>
-      <td style="width:90px"><input data-path="hw.consumers.${i}.count" inputmode="decimal"></td>
-      <td style="width:110px"><input data-path="hw.consumers.${i}.qDay" inputmode="decimal"></td>
-      <td style="width:130px"><input data-path="hw.consumers.${i}.qHour" inputmode="decimal"></td>
-      <td><button class="del" data-del="hw.consumers" data-i="${i}" title="Удалить">×</button></td></tr>`;
-  });
-  const t = document.getElementById('hwTable'); t.innerHTML = h; bind(t); refreshInputs(t);
 }
 function renderBoilers(){
   let h = '<tr><th>№</th><th>Тип котла</th><th>Марка</th><th>Мощность, кВт</th><th>КПД, %</th><th>Кол-во, шт</th><th>Расход газа, м³/ч</th><th></th></tr>';
@@ -565,18 +480,14 @@ function renderBoilers(){
 }
 function renderMonths(){
   const man = S.monthsManual, dis = man ? '' : 'disabled';
-  let h = `<tr><th>Месяц</th><th>Сут. в мес.</th><th>Сут. отопления</th><th>tср. за сут. отопл., °C</th>${S.use.hw ? '<th>Сут. ГВС (лето)</th>' : ''}
-    <th>Отопление, Гкал</th>${S.use.vent ? '<th>Вентиляция, Гкал</th>' : ''}${S.use.hw ? '<th>ГВС, Гкал</th>' : ''}<th>Итого с потерями, Гкал</th><th>Газ, тыс. м³</th><th>т у.т.</th></tr>`;
+  let h = '<tr><th>Месяц</th><th>Сут. в мес.</th><th>Сут. отопления</th><th>tср. за сут. отопл., °C</th><th>Отопление, Гкал</th><th>С собств. нуждами и потерями, Гкал</th><th>Газ, тыс. м³</th><th>т у.т.</th></tr>';
   MONTHS.forEach((m,i) => {
     h += `<tr><td>${m}</td><td class="n">${MDAYS[i]}</td>
       <td style="width:90px"><input data-path="monthsData.${i}.nHeat" id="mN${i}" ${dis} inputmode="decimal"></td>
       <td style="width:100px"><input data-path="monthsData.${i}.tHeat" id="mT${i}" ${dis} inputmode="decimal"></td>
-      ${S.use.hw ? `<td style="width:90px"><input data-path="monthsData.${i}.nSummer" id="mS${i}" ${dis} inputmode="decimal"></td>` : ''}
-      <td class="n" id="mH${i}"></td>${S.use.vent ? `<td class="n" id="mV${i}"></td>` : ''}${S.use.hw ? `<td class="n" id="mW${i}"></td>` : ''}
-      <td class="n" id="mL${i}"></td><td class="n" id="mG${i}"></td><td class="n" id="mU${i}"></td></tr>`;
+      <td class="n" id="mH${i}"></td><td class="n" id="mL${i}"></td><td class="n" id="mG${i}"></td><td class="n" id="mU${i}"></td></tr>`;
   });
-  h += `<tr class="total"><td>Итого</td><td class="n">365</td><td class="n" id="mNs"></td><td class="n" id="mTs"></td>${S.use.hw ? '<td class="n" id="mSs"></td>' : ''}
-    <td class="n" id="mHs"></td>${S.use.vent ? '<td class="n" id="mVs"></td>' : ''}${S.use.hw ? '<td class="n" id="mWs"></td>' : ''}<td class="n" id="mLs"></td><td class="n" id="mGs"></td><td class="n" id="mUs"></td></tr>`;
+  h += '<tr class="total"><td>Итого</td><td class="n">365</td><td class="n" id="mNs"></td><td class="n" id="mTs"></td><td class="n" id="mHs"></td><td class="n" id="mLs"></td><td class="n" id="mGs"></td><td class="n" id="mUs"></td></tr>';
   const t = document.getElementById('monthsTable'); t.innerHTML = h;
   if (man) bind(t);
   document.getElementById('monthsManual').checked = man;
@@ -590,44 +501,39 @@ function recompute(){
   RES = compute(S);
   const r = RES;
   if (S.params.alphaAuto) S.params.alpha = r.alpha;
-  if (S.hw.nSummerAuto) S.hw.nSummer = Math.round(r.nS);
   document.querySelectorAll('[data-path="params.alpha"]').forEach(e => { e.disabled = !!S.params.alphaAuto; });
-  document.querySelectorAll('[data-path="hw.nSummer"]').forEach(e => { e.disabled = !!S.hw.nSummerAuto; });
-  refreshInputs($('tab-src')); refreshInputs($('tab-hw'));
-  $('cardVent').style.display = S.use.vent ? '' : 'none';
-  $('hwOff').style.display = S.use.hw ? 'none' : '';
+  refreshInputs($('tab-src'));
 
-  r.rooms.forEach((x,i) => { setT('rQo'+i, fmt(x.Qo)); setT('rQv'+i, fmt(x.Qv)); setT('rQy'+i, fmt(x.Qo_year, 3)); });
-  setT('rVsum', fmt(sum(r.rooms.map(x => x.V)), 1)); setT('rQoSum', fmt(r.Qo)); setT('rQvSum', fmt(r.Qv)); setT('rQySum', fmt(r.Qo_year, 3));
+  r.rooms.forEach((x,i) => { setT('rQo'+i, fmt(x.Qo)); setT('rQa'+i, fmt(x.Qo_avg)); setT('rQy'+i, fmt(x.Qo_year, 3)); });
+  setT('rVsum', fmt(sum(r.rooms.map(x => x.V)), 1)); setT('rQoSum', fmt(r.Qo)); setT('rQaSum', fmt(r.Qo_avg)); setT('rQySum', fmt(r.Qo_year, 3));
   r.boilers.forEach((b,i) => setT('bGas'+i, b.eff > 0 && r.qn > 0 ? fmt(b.n*b.P*860/(r.qn*b.eff/100), 2) : '—'));
   $('boilCheck').innerHTML = r.Pinst > 0 ? `<p class="note">Установленная мощность: <b>${fmt(r.Pinst,1)} кВт</b> (${fmt(r.Pinst*0.00086,4)} Гкал/ч); расчётная максимальная нагрузка с потерями: <b>${fmt(r.QmaxL/0.86/1000,1)} кВт</b> (${fmt(r.QmaxL/1e6,4)} Гкал/ч). Средневзвешенный КПД: ${fmt(r.eff,1)} %.</p>` : '';
 
   // по месяцам
   const m = r.monthly;
-  const cols = { H: roundSeries(m.map(x => x.heat), 3), V: roundSeries(m.map(x => x.vent), 3), W: roundSeries(m.map(x => x.hot), 3),
-    L: roundSeries(m.map(x => x.totalL), 3), G: roundSeries(m.map(x => x.gas), 3), U: roundSeries(m.map(x => x.tut), 2) };
+  const cols = { H: roundSeries(m.map(x => x.heat), 3), L: roundSeries(m.map(x => x.totalL), 3), G: roundSeries(m.map(x => x.gas), 3), U: roundSeries(m.map(x => x.tut), 2) };
   m.forEach((x,i) => {
     if (!S.monthsManual){
-      const a = $('mN'+i), b = $('mT'+i), c = $('mS'+i);
-      if (a) a.value = x.nHeat; if (b) b.value = x.tHeat == null ? '' : String(x.tHeat).replace('.', ','); if (c) c.value = x.nSummer;
+      const a = $('mN'+i), b = $('mT'+i);
+      if (a) a.value = x.nHeat; if (b) b.value = x.tHeat == null ? '' : String(x.tHeat).replace('.', ',');
     }
-    setT('mH'+i, fmt(cols.H[i],3)); setT('mV'+i, fmt(cols.V[i],3)); setT('mW'+i, fmt(cols.W[i],3));
+    setT('mH'+i, fmt(cols.H[i],3));
     setT('mL'+i, fmt(cols.L[i],3)); setT('mG'+i, fmt(cols.G[i],3)); setT('mU'+i, fmt(cols.U[i],2));
   });
   const nsum = sum(m.map(x => x.nHeat)), tw = nsum ? sum(m.map(x => x.nHeat * (x.tHeat ?? 0))) / nsum : 0;
-  setT('mNs', nsum); setT('mTs', fmt(tw,1)); setT('mSs', sum(m.map(x => x.nSummer)));
-  setT('mHs', fmt(r.Qo_year,3)); setT('mVs', fmt(r.Qv_year,3)); setT('mWs', fmt(r.Qhw_year,3));
+  setT('mNs', nsum); setT('mTs', fmt(tw,1));
+  setT('mHs', fmt(r.Qo_year,3));
   setT('mLs', fmt(r.QyearL,3)); setT('mGs', fmt(r.gasY/1000,3)); setT('mUs', fmt(r.tut,2));
 
   const warnHtml = r.warnings.map(w => `<div class="warn">${esc(w)}</div>`).join('');
   $('monthsWarn').innerHTML = warnHtml;
 
   $('summary').innerHTML = `
-    <div class="kv"><span>Макс. часовая нагрузка</span><b>${fmt(r.Qmax/1e6,4)} Гкал/ч</b></div>
+    <div class="kv"><span>Макс. нагрузка на отопление</span><b>${fmt(r.Qmax/1e6,4)} Гкал/ч</b></div>
     <div class="kv"><span>с собств. нуждами и потерями</span><b>${fmt(r.QmaxL/1e6,4)} Гкал/ч</b></div>
     <div class="kv"><span></span><b>${fmt(r.QmaxL/860,1)} кВт</b></div>
     <div class="kv"><span>Макс. часовой расход газа</span><b class="big">${fmt(r.gasH,2)} м³/ч</b></div>
-    <div class="kv"><span>Годовая потребность в тепле</span><b>${fmt(r.QyearL,2)} Гкал</b></div>
+    <div class="kv"><span>Годовая потребность в тепле (с потерями)</span><b>${fmt(r.QyearL,2)} Гкал</b></div>
     <div class="kv"><span>Годовой расход газа</span><b class="big">${fmt(r.gasY/1000,3)} тыс. м³</b></div>
     <div class="kv"><span>Условное топливо</span><b>${fmt(r.tut,2)} т у.т.</b></div>
     <div class="kv"><span>КПД${r.effFromBoilers ? ' (по котлам)' : ''}</span><b>${fmt(r.eff,1)} %</b></div>` + warnHtml;
@@ -637,18 +543,15 @@ function renderResults(){
   const r = RES;
   const tr = (a,b,c) => `<tr><td>${a}</td><td class="n">${b}</td><td>${c}</td></tr>`;
   $('resBody').innerHTML = `<div class="grid2"><div>
-    <table class="t"><tr><th colspan="3">Максимальные часовые нагрузки</th></tr>
-    ${tr('Отопление', fmt(r.Qo), 'ккал/ч')}${tr('Вентиляция', fmt(r.Qv), 'ккал/ч')}${tr('Горячее водоснабжение', fmt(r.Qhw_max), 'ккал/ч')}
-    ${tr('<b>Итого</b>', '<b>'+fmt(r.Qmax)+'</b>', 'ккал/ч')}
-    ${tr('Итого с собств. нуждами и потерями', fmt(r.QmaxL), 'ккал/ч')}
+    <table class="t"><tr><th colspan="3">Часовые нагрузки на отопление</th></tr>
+    ${tr('Максимальная часовая', fmt(r.Qo), 'ккал/ч')}
+    ${tr('То же с собств. нуждами и потерями', '<b>'+fmt(r.QmaxL)+'</b>', 'ккал/ч')}
+    ${tr('Средняя часовая за отопит. период', fmt(r.Qo_avg), 'ккал/ч')}
     ${tr('Максимальный часовой расход газа', '<b>'+fmt(r.gasH,2)+'</b>', 'м³/ч')}
     ${r.Pinst > 0 ? tr('Расход газа по установленному оборудованию', fmt(r.gasEquip,2), 'м³/ч') : ''}</table></div><div>
-    <table class="t"><tr><th colspan="3">Среднечасовые и годовые расходы тепла</th></tr>
-    ${tr('Отопление, среднечасовой', fmt(r.Qo_avg/1e6,5), 'Гкал/ч')}${tr('Отопление, годовой', fmt(r.Qo_year,3), 'Гкал/год')}
-    ${tr('Вентиляция, среднечасовой', fmt(r.Qv_avg/1e6,5), 'Гкал/ч')}${tr('Вентиляция, годовой', fmt(r.Qv_year,3), 'Гкал/год')}
-    ${tr('ГВС, среднечасовой (зима)', fmt(r.Qhw_w/1e6,5), 'Гкал/ч')}${tr('ГВС, среднечасовой (лето)', fmt(r.Qhw_s/1e6,5), 'Гкал/ч')}
-    ${tr('ГВС, годовой', fmt(r.Qhw_year,3), 'Гкал/год')}
-    ${tr('<b>Суммарный годовой расход тепла</b> (с потерями)', '<b>'+fmt(r.QyearL,3)+'</b>', 'Гкал/год')}
+    <table class="t"><tr><th colspan="3">Годовые расходы</th></tr>
+    ${tr('Годовой расход тепла на отопление', fmt(r.Qo_year,3), 'Гкал/год')}
+    ${tr('<b>То же с собств. нуждами и потерями</b>', '<b>'+fmt(r.QyearL,3)+'</b>', 'Гкал/год')}
     ${tr('Годовой расход газа', '<b>'+fmt(r.gasY/1000,3)+'</b>', 'тыс. м³/год')}
     ${tr('Годовой расход условного топлива', fmt(r.tut,3), 'т у.т./год')}</table></div></div>`;
   if ($('previewCard').style.display !== 'none') $('preview').innerHTML = reportHtml(buildReport(S, RES));
@@ -657,15 +560,12 @@ function renderResults(){
 /* ---- Изменения ---- */
 let saveTimer = null;
 function onChange(path){
-  if (path === 'use.vent' || path === 'use.hw'){ renderRooms(); renderMonths(); }
-  if (path === 'params.alphaAuto' || path === 'hw.nSummerAuto'){ /* обработается в recompute */ }
-  if (/^boilers\.\d+\.(P|n|eff)/.test(path) || path === 'climate.city'){ /* без перерисовки */ }
   recompute();
   clearTimeout(saveTimer); saveTimer = setTimeout(autosave, 400);
 }
 function autosave(){ try { localStorage.setItem(LS_KEY, JSON.stringify({ S, fileName })); } catch(e){} }
 function fullRender(){
-  renderRooms(); renderHw(); renderBoilers(); renderMonths(); fillCitySelect();
+  renderRooms(); renderBoilers(); renderMonths(); fillCitySelect();
   refreshInputs(); recompute();
   $('fileLabel').textContent = (fileName ? fileName + ' · ' : 'Новый расчёт · ') + 'данные сохраняются в этом браузере автоматически';
 }
@@ -686,20 +586,18 @@ function fillCitySelect(){
 
 /* ============================ Отчёт: модель ============================ */
 function buildReport(s, r){
-  const q = s.req, u = s.use, B = [];
+  const q = s.req, B = [];
   const P = (text, o = {}) => B.push({ t:'p', text, ...o });
   const H = (text) => B.push({ t:'h1', text });
-  const H2 = (text) => B.push({ t:'h2', text });
   const Fm = (text) => B.push({ t:'p', text, formula:true });
   const T = (cols, head, rows, o = {}) => B.push({ t:'table', cols, head, rows, ...o });
-  const uses = [u.heat && 'отопление', u.vent && 'вентиляция', u.hw && 'горячее водоснабжение'].filter(Boolean);
   const dash = v => (v && String(v).trim()) ? v : '—';
 
   if (q.contractor) P(q.contractor, { align:'center', bold:true });
   if (q.contractorAddr) P(q.contractorAddr, { align:'center', size:20 });
   P('', {}); P('', {});
   P('РАСЧЁТ', { align:'center', bold:true, size:32 });
-  P('часовых и годовых расходов тепла и топлива', { align:'center', bold:true, size:28 });
+  P('часовых и годовых расходов тепла и топлива на отопление', { align:'center', bold:true, size:28 });
   P('', {});
   if (q.object) P('Объект: ' + q.object, { align:'center' });
   if (q.objectAddr) P('Адрес: ' + q.objectAddr, { align:'center' });
@@ -716,7 +614,7 @@ function buildReport(s, r){
     ['Готовность предприятия к использованию топливно-энергетических ресурсов', dash(q.readiness)],
     ['На основании какого документа проектируется (реконструируется) предприятие', dash(q.basisDoc)],
     ['Вид запрашиваемого топлива' + (q.fuelReason ? ', обоснование' : ''), dash([q.fuelType, q.fuelReason].filter(Boolean).join('. '))],
-    ['Направление использования топлива', dash(uses.join(', '))],
+    ['Направление использования топлива', 'отопление'],
     ['Год начала потребления топлива', dash(q.yearStart)],
     ['Год выхода предприятия на проектную мощность', dash(q.yearDesign)],
     ['Максимальный часовой расход газа, м³/ч', R(r.gasH, 2)],
@@ -729,14 +627,12 @@ function buildReport(s, r){
   const src = [
     ['Место строительства', '', dash(s.climate.city), ''],
     ['Расчётная температура наружного воздуха для проектирования отопления (наиболее холодной пятидневки обеспеченностью 0,92)', 't_{н.р}', tnum(r.tnr), '°C'],
-  ];
-  if (u.vent) src.push(['Расчётная температура наружного воздуха для проектирования вентиляции', 't_{н.в}', tnum(r.tnv), '°C']);
-  src.push(['Продолжительность отопительного периода', 'n_{о}', R(r.no), 'сут'],
+    ['Продолжительность отопительного периода', 'n_{о}', R(r.no), 'сут'],
     ['Средняя температура наружного воздуха за отопительный период', 't_{ср.о}', tnum(r.tav), '°C'],
     ['Средняя температура наиболее холодного месяца', 't_{х.м}', tnum(r.tCold), '°C'],
-    ['Поправочный коэффициент к удельной отопительной характеристике', 'α', R(r.alpha, 3), '—']);
+    ['Поправочный коэффициент к удельной отопительной характеристике', 'α', R(r.alpha, 3), '—'],
+  ];
   if (r.kInf) src.push(['Коэффициент инфильтрации', 'K_{и.р}', R(r.kInf, 3), '—']);
-  if (u.vent) src.push(['Время работы вентиляции в сутки', 'z', R(r.z), 'ч'], ['Выходные и праздничные дни за отопительный период', 'n_{вых}', R(r.wk), 'сут']);
   src.push(['Низшая теплота сгорания природного газа', 'Q_{н}^{р}', R(r.qn), 'ккал/м³'],
     ['КПД котлов' + (r.effFromBoilers ? ' (средневзвешенный)' : ''), 'η', R(r.eff, 1), '%'],
     ['Расход тепла на собственные нужды котельной', 'k_{сн}', R(r.own, 1), '%'],
@@ -746,78 +642,30 @@ function buildReport(s, r){
 
   H('3. Характеристика зданий');
   {
-    const head = ['№', 'Наименование', 'Объём V, м³', 't_{в}, °C', 'q_{о}, ккал/(м³·ч·°C)'];
-    const cols = [{w:6,a:'center'},{w:30},{w:13,a:'right'},{w:9,a:'center'},{w:14,a:'center'}];
-    if (u.vent){ head.push('q_{в}, ккал/(м³·ч·°C)'); cols.push({w:14,a:'center'}); }
-    head.push('Q_{о.max}, ккал/ч'); cols.push({w:14,a:'right'});
-    if (u.vent){ head.push('Q_{в.max}, ккал/ч'); cols.push({w:14,a:'right'}); }
-    const rows = r.rooms.map((x,i) => { const a = [String(i+1), dash(x.name), R(x.V, 1), tnum(x.tin), R(x.qo, 3)]; if (u.vent) a.push(R(x.qv, 3)); a.push(R(x.Qo)); if (u.vent) a.push(R(x.Qv)); return a; });
-    const tot = ['', { text:'Итого', bold:true }, { text:R(sum(r.rooms.map(x => x.V)), 1), bold:true }, '', ''];
-    if (u.vent) tot.push(''); tot.push({ text:R(r.Qo), bold:true }); if (u.vent) tot.push({ text:R(r.Qv), bold:true });
-    rows.push(tot);
-    T(cols, head, rows, { size:20 });
+    const rows = r.rooms.map((x,i) => [String(i+1), dash(x.name), R(x.V, 1), tnum(x.tin), R(x.qo, 3), R(x.Qo), R(x.Qo_year, 3)]);
+    rows.push(['', { text:'Итого', bold:true }, { text:R(sum(r.rooms.map(x => x.V)), 1), bold:true }, '', '', { text:R(r.Qo), bold:true }, { text:R(r.Qo_year, 3), bold:true }]);
+    T([{w:6,a:'center'},{w:30},{w:13,a:'right'},{w:9,a:'center'},{w:14,a:'center'},{w:14,a:'right'},{w:14,a:'right'}],
+      ['№', 'Наименование', 'Объём V, м³', 't_{в}, °C', 'q_{о}, ккал/(м³·ч·°C)', 'Q_{о.max}, ккал/ч', 'Q_{о}^{год}, Гкал'], rows, { size:20 });
   }
 
-  H('4. Расчёт тепловых нагрузок');
+  H('4. Расчёт тепловой нагрузки на отопление');
   const listRooms = r.rooms.length <= 20;
-  if (u.heat){
-    H2('4.1. Отопление');
-    P('Максимальный часовой расход тепла на отопление определяется по укрупнённым показателям (МДК 4-05.2004):');
-    Fm('Q_{о.max} = α · V · q_{о} · (t_{в} − t_{н.р})' + (r.kInf ? ' · (1 + K_{и.р})' : '') + ', ккал/ч;');
-    if (listRooms) r.rooms.forEach(x => Fm(`${dash(x.name)}: Q_{о.max} = ${R(r.alpha,3)} · ${R(x.V,1)} · ${R(x.qo,3)} · (${tnum(x.tin)} − ${RS(r.tnr)})${r.kInf ? ' · (1 + ' + R(r.kInf,3) + ')' : ''} = ${R(x.Qo)} ккал/ч;`));
-    P('Средний часовой расход тепла на отопление за отопительный период:');
-    Fm('Q_{о.ср} = Q_{о.max} · (t_{в} − t_{ср.о}) / (t_{в} − t_{н.р}), ккал/ч;');
-    if (listRooms) r.rooms.forEach(x => Fm(`${dash(x.name)}: Q_{о.ср} = ${R(x.Qo)} · (${tnum(x.tin)} − ${RS(r.tav,1)}) / (${tnum(x.tin)} − ${RS(r.tnr)}) = ${R(x.Qo_avg)} ккал/ч;`));
-    P('Годовой расход тепла на отопление:');
-    Fm('Q_{о}^{год} = Q_{о.ср} · 24 · n_{о} · 10^{−6}, Гкал/год;');
-    if (listRooms) r.rooms.forEach(x => Fm(`${dash(x.name)}: Q_{о}^{год} = ${R(x.Qo_avg)} · 24 · ${R(r.no)} · 10^{−6} = ${R(x.Qo_year,3)} Гкал/год;`));
-    P(`Итого на отопление: Q_{о.max} = ${R(r.Qo)} ккал/ч (${R(r.Qo/1e6,5)} Гкал/ч); Q_{о}^{год} = ${R(r.Qo_year,3)} Гкал/год.`, { bold:true, align:'left' });
-  }
-  if (u.vent){
-    H2('4.2. Вентиляция');
-    P('Максимальный часовой расход тепла на вентиляцию:');
-    Fm('Q_{в.max} = V · q_{в} · (t_{в} − t_{н.в}), ккал/ч;');
-    if (listRooms) r.rooms.filter(x => x.qv).forEach(x => Fm(`${dash(x.name)}: Q_{в.max} = ${R(x.V,1)} · ${R(x.qv,3)} · (${tnum(x.tin)} − ${RS(r.tnv)}) = ${R(x.Qv)} ккал/ч;`));
-    P('Средний часовой расход тепла на вентиляцию за отопительный период:');
-    Fm('Q_{в.ср} = Q_{в.max} · (t_{в} − t_{ср.о}) / (t_{в} − t_{н.в}), ккал/ч;');
-    if (listRooms) r.rooms.filter(x => x.qv).forEach(x => Fm(`${dash(x.name)}: Q_{в.ср} = ${R(x.Qv)} · (${tnum(x.tin)} − ${RS(r.tav,1)}) / (${tnum(x.tin)} − ${RS(r.tnv)}) = ${R(x.Qv_avg)} ккал/ч;`));
-    P('Годовой расход тепла на вентиляцию:');
-    Fm('Q_{в}^{год} = Q_{в.ср} · z · (n_{о} − n_{вых}) · 10^{−6}, Гкал/год;');
-    Fm(`Q_{в}^{год} = ${R(r.Qv_avg)} · ${R(r.z)} · (${R(r.no)} − ${R(r.wk)}) · 10^{−6} = ${R(r.Qv_year,3)} Гкал/год.`);
-  }
-  if (u.hw){
-    H2(`4.${u.vent ? 3 : 2}. Горячее водоснабжение`);
-    P('Потребители горячей воды (нормы водопотребления — по СП 30.13330.2020):');
-    T([{w:6,a:'center'},{w:38},{w:12,a:'center'},{w:12,a:'right'},{w:16,a:'right'},{w:16,a:'right'}],
-      ['№', 'Потребитель', 'Ед. изм.', 'Кол-во m', 'Норма в сутки g_{сут}, л', 'Норма в час g_{ч}, л'],
-      [...r.cons.map((x,i) => [String(i+1), dash(x.name), dash(x.unit), R(x.count, x.count % 1 ? 1 : 0), R(x.qDay, 1), R(x.qHour, 1)]),
-       ['', { text:'Итого: Σ(m · g_{сут}) = ' + R(r.Gd, 1) + ' л/сут;  Σ(m · g_{ч}) = ' + R(r.Gh, 1) + ' л/ч', colspan:5 }]], { size:20 });
-    P('Средний часовой расход тепла на горячее водоснабжение в отопительный период:');
-    Fm('Q_{гв.ср}^{з} = Σ(m · g_{сут}) · (55 − t_{х}^{з}) · (1 + K_{т.п}) / T, ккал/ч;');
-    Fm(`Q_{гв.ср}^{з} = ${R(r.Gd,1)} · (55 − ${RS(r.tcw)}) · (1 + ${R(r.ktp,2)}) / ${R(r.T)} = ${R(r.Qhw_w)} ккал/ч;`);
-    P('Максимальный часовой расход тепла на горячее водоснабжение:');
-    Fm('Q_{гв.max} = Σ(m · g_{ч}) · (55 − t_{х}^{з}) · (1 + K_{т.п}), ккал/ч;');
-    Fm(`Q_{гв.max} = ${R(r.Gh,1)} · (55 − ${RS(r.tcw)}) · (1 + ${R(r.ktp,2)}) = ${R(r.Qhw_max)} ккал/ч;`);
-    P('Средний часовой расход тепла на горячее водоснабжение в летний период:');
-    Fm('Q_{гв.ср}^{л} = Q_{гв.ср}^{з} · β · (55 − t_{х}^{л}) / (55 − t_{х}^{з}), ккал/ч;');
-    Fm(`Q_{гв.ср}^{л} = ${R(r.Qhw_w)} · ${R(r.beta,2)} · (55 − ${RS(r.tcs)}) / (55 − ${RS(r.tcw)}) = ${R(r.Qhw_s)} ккал/ч;`);
-    P('Годовой расход тепла на горячее водоснабжение:');
-    Fm('Q_{гв}^{год} = (Q_{гв.ср}^{з} · n_{о} + Q_{гв.ср}^{л} · n_{л}) · T · 10^{−6}, Гкал/год;');
-    Fm(`Q_{гв}^{год} = (${R(r.Qhw_w)} · ${R(r.no)} + ${R(r.Qhw_s)} · ${R(r.nS)}) · ${R(r.T)} · 10^{−6} = ${R(r.Qhw_year,3)} Гкал/год.`);
-  }
+  P('Максимальный часовой расход тепла на отопление определяется по укрупнённым показателям (МДК 4-05.2004):');
+  Fm('Q_{о.max} = α · V · q_{о} · (t_{в} − t_{н.р})' + (r.kInf ? ' · (1 + K_{и.р})' : '') + ', ккал/ч;');
+  if (listRooms) r.rooms.forEach(x => Fm(`${dash(x.name)}: Q_{о.max} = ${R(r.alpha,3)} · ${R(x.V,1)} · ${R(x.qo,3)} · (${tnum(x.tin)} − ${RS(r.tnr)})${r.kInf ? ' · (1 + ' + R(r.kInf,3) + ')' : ''} = ${R(x.Qo)} ккал/ч;`));
+  P('Средний часовой расход тепла на отопление за отопительный период:');
+  Fm('Q_{о.ср} = Q_{о.max} · (t_{в} − t_{ср.о}) / (t_{в} − t_{н.р}), ккал/ч;');
+  if (listRooms) r.rooms.forEach(x => Fm(`${dash(x.name)}: Q_{о.ср} = ${R(x.Qo)} · (${tnum(x.tin)} − ${RS(r.tav,1)}) / (${tnum(x.tin)} − ${RS(r.tnr)}) = ${R(x.Qo_avg)} ккал/ч;`));
+  P('Годовой расход тепла на отопление:');
+  Fm('Q_{о}^{год} = Q_{о.ср} · 24 · n_{о} · 10^{−6}, Гкал/год;');
+  if (listRooms) r.rooms.forEach(x => Fm(`${dash(x.name)}: Q_{о}^{год} = ${R(x.Qo_avg)} · 24 · ${R(r.no)} · 10^{−6} = ${R(x.Qo_year,3)} Гкал/год;`));
+  P(`Итого на отопление: Q_{о.max} = ${R(r.Qo)} ккал/ч (${R(r.Qo/1e6,5)} Гкал/ч); Q_{о.ср} = ${R(r.Qo_avg)} ккал/ч; Q_{о}^{год} = ${R(r.Qo_year,3)} Гкал/год.`, { bold:true, align:'left' });
 
   H('5. Сводная потребность в тепле');
-  {
-    const rows = [];
-    const hoursH = 24 * r.no, hoursV = r.z * r.ventDays, hoursW = r.T * (r.no + r.nS);
-    if (u.heat) rows.push(['Отопление', R(r.Qo/1e6,5), R(r.Qo_avg/1e6,5), R(hoursH), R(r.Qo_year,3)]);
-    if (u.vent) rows.push(['Вентиляция', R(r.Qv/1e6,5), R(r.Qv_avg/1e6,5), R(hoursV), R(r.Qv_year,3)]);
-    if (u.hw) rows.push(['Горячее водоснабжение', R(r.Qhw_max/1e6,5), R(r.Qhw_w/1e6,5), R(hoursW), R(r.Qhw_year,3)]);
-    rows.push([{ text:'Итого', bold:true }, { text:R(r.Qmax/1e6,5), bold:true }, '', '', { text:R(r.Qyear,3), bold:true }]);
-    rows.push([`Итого с учётом собственных нужд котельной (${R(r.own,1)} %) и потерь в сетях (${R(r.loss,1)} %)`, { text:R(r.QmaxL/1e6,5), bold:true }, '', '', { text:R(r.QyearL,3), bold:true }]);
-    T([{w:34},{w:17,a:'right'},{w:17,a:'right'},{w:14,a:'right'},{w:18,a:'right'}],
-      ['Вид нагрузки', 'Максимальная часовая, Гкал/ч', 'Средняя часовая, Гкал/ч', 'Число часов работы в году', 'Годовая потребность, Гкал'], rows, { size:20 });
-  }
+  T([{w:34},{w:17,a:'right'},{w:17,a:'right'},{w:14,a:'right'},{w:18,a:'right'}],
+    ['Вид нагрузки', 'Максимальная часовая, Гкал/ч', 'Средняя часовая, Гкал/ч', 'Число часов работы в году', 'Годовая потребность, Гкал'],
+    [['Отопление', R(r.Qo/1e6,5), R(r.Qo_avg/1e6,5), R(24 * r.no), R(r.Qo_year,3)],
+     [`Итого с учётом собственных нужд котельной (${R(r.own,1)} %) и потерь в сетях (${R(r.loss,1)} %)`, { text:R(r.QmaxL/1e6,5), bold:true }, '', '', { text:R(r.QyearL,3), bold:true }]], { size:20 });
 
   let sec = 6;
   if (r.boilers.length){
@@ -831,7 +679,7 @@ function buildReport(s, r){
 
   H(`${sec++}. Расход топлива`);
   P('Максимальная часовая нагрузка с учётом собственных нужд котельной и потерь в сетях:');
-  Fm(`Q_{max} = (Q_{о.max} + Q_{в.max} + Q_{гв.max}) · (1 + (k_{сн} + k_{пот}) / 100) = ${R(r.Qmax)} · ${R(r.k,3)} = ${R(r.QmaxL)} ккал/ч.`);
+  Fm(`Q_{max} = Q_{о.max} · (1 + (k_{сн} + k_{пот}) / 100) = ${R(r.Qmax)} · ${R(r.k,3)} = ${R(r.QmaxL)} ккал/ч.`);
   P('Максимальный часовой расход газа:');
   Fm(`B_{ч} = Q_{max} / (Q_{н}^{р} · η) = ${R(r.QmaxL)} / (${R(r.qn)} · ${R(r.eff/100,3)}) = ${R(r.gasH,2)} м³/ч.`);
   if (r.Pinst > 0){
@@ -839,7 +687,7 @@ function buildReport(s, r){
     Fm(`B_{ч.уст} = Σ(N · 860 · n / (Q_{н}^{р} · η)) = ${R(r.gasEquip,2)} м³/ч.`);
   }
   P('Годовая потребность в тепле с учётом собственных нужд котельной и потерь в сетях:');
-  Fm(`Q^{год} = (Q_{о}^{год} + Q_{в}^{год} + Q_{гв}^{год}) · (1 + (k_{сн} + k_{пот}) / 100) = ${R(r.Qyear,3)} · ${R(r.k,3)} = ${R(r.QyearL,3)} Гкал/год.`);
+  Fm(`Q^{год} = Q_{о}^{год} · (1 + (k_{сн} + k_{пот}) / 100) = ${R(r.Qyear,3)} · ${R(r.k,3)} = ${R(r.QyearL,3)} Гкал/год.`);
   P('Годовой расход газа:');
   Fm(`B_{год} = Q^{год} · 10^{6} / (Q_{н}^{р} · η) = ${R(r.QyearL,3)} · 10^{6} / (${R(r.qn)} · ${R(r.eff/100,3)}) = ${R(r.gasY)} м³/год = ${R(r.gasY/1000,3)} тыс. м³/год.`);
   P('Годовой расход условного топлива:');
@@ -850,31 +698,20 @@ function buildReport(s, r){
   H(`${sec++}. Помесячное распределение потребности в тепле и топливе`);
   {
     const m = r.monthly;
-    const cols = [{w:11}, {w:10,a:'center'}, {w:8,a:'center'}];
-    const head = ['Месяц', 'Сут. отоп-ления', 't_{ср}, °C'];
-    if (u.hw){ cols.push({w:9,a:'center'}); head.push('Сут. ГВС (лето)'); }
-    const series = [];
-    if (u.heat){ series.push(roundSeries(m.map(x => x.heat), 3)); head.push('Отопление, Гкал'); cols.push({w:11,a:'right'}); }
-    if (u.vent){ series.push(roundSeries(m.map(x => x.vent), 3)); head.push('Вентиляция, Гкал'); cols.push({w:11,a:'right'}); }
-    if (u.hw){ series.push(roundSeries(m.map(x => x.hot), 3)); head.push('ГВС, Гкал'); cols.push({w:11,a:'right'}); }
-    series.push(roundSeries(m.map(x => x.total), 3)); head.push('Итого, Гкал'); cols.push({w:11,a:'right'});
-    series.push(roundSeries(m.map(x => x.totalL), 3)); head.push('Итого с собств. нуждами и потерями, Гкал'); cols.push({w:13,a:'right'});
-    series.push(roundSeries(m.map(x => x.gas), 3)); head.push('Расход газа, тыс. м³'); cols.push({w:11,a:'right'});
-    series.push(roundSeries(m.map(x => x.tut), 2)); head.push('Условное топливо, т у.т.'); cols.push({w:11,a:'right'});
-    const dec = series.map((_,j) => j === series.length - 1 ? 2 : 3);
+    const series = [roundSeries(m.map(x => x.heat), 3), roundSeries(m.map(x => x.totalL), 3), roundSeries(m.map(x => x.gas), 3), roundSeries(m.map(x => x.tut), 2)];
+    const dec = [3, 3, 3, 2];
     const rows = m.map((x,i) => {
       const a = [MONTHS[i], x.nHeat ? R(x.nHeat) : '—', x.nHeat && x.tHeat != null ? R(x.tHeat, 1) : '—'];
-      if (u.hw) a.push(x.nSummer ? R(x.nSummer) : '—');
       series.forEach((sr,j) => a.push(sr[i] ? R(sr[i], dec[j]) : '—'));
       return a;
     });
     const nsum = sum(m.map(x => x.nHeat));
     const tot = [{ text:'За год', bold:true }, { text:R(nsum), bold:true }, { text:nsum ? R(sum(m.map(x => x.nHeat*(x.tHeat ?? 0)))/nsum, 1) : '—', bold:true }];
-    if (u.hw) tot.push({ text:R(sum(m.map(x => x.nSummer))), bold:true });
     series.forEach((sr,j) => tot.push({ text:R(sum(sr), dec[j]), bold:true }));
     rows.push(tot);
-    T(cols, head, rows, { size:20 });
-    P('Примечания: 1. t_{ср} — средняя температура наружного воздуха за сутки отопительного периода в данном месяце. 2. Годовой расход тепла на отопление и вентиляцию распределён по месяцам пропорционально градусо-суткам: Q_{мес} = Q^{год} · n_{мес} · (t_{в} − t_{ср.мес}) / Σ[n · (t_{в} − t_{ср})]; на горячее водоснабжение — пропорционально числу суток работы в отопительный и летний периоды.', { size:20, italic:true });
+    T([{w:14},{w:11,a:'center'},{w:11,a:'center'},{w:15,a:'right'},{w:17,a:'right'},{w:15,a:'right'},{w:15,a:'right'}],
+      ['Месяц', 'Сут. отоп-ления', 't_{ср}, °C', 'Отопление, Гкал', 'С учётом собств. нужд и потерь, Гкал', 'Расход газа, тыс. м³', 'Условное топливо, т у.т.'], rows, { size:22 });
+    P('Примечания: 1. t_{ср} — средняя температура наружного воздуха за сутки отопительного периода в данном месяце. 2. Годовой расход тепла распределён по месяцам пропорционально градусо-суткам: Q_{мес} = Q^{год} · n_{мес} · (t_{в} − t_{ср.мес}) / Σ[n · (t_{в} − t_{ср})].', { size:20, italic:true });
   }
 
   P('', {});
@@ -1074,26 +911,25 @@ function init(){
   document.addEventListener('click', e => {
     const d = e.target.closest('button[data-del]'); if (!d) return;
     getPath(S, d.dataset.del).splice(+d.dataset.i, 1);
-    if (d.dataset.del === 'rooms') renderRooms(); else if (d.dataset.del === 'boilers') renderBoilers(); else renderHw();
+    if (d.dataset.del === 'rooms') renderRooms(); else renderBoilers();
     onChange(d.dataset.del);
   });
-  $('btnAddRoom').onclick = () => { const l = S.rooms[S.rooms.length-1]; S.rooms.push({ name:'Литер ' + String.fromCharCode(1040 + Math.min(S.rooms.length, 31)), V:'', tIn: l ? l.tIn : 20, qo: l ? l.qo : '', qv:0 }); renderRooms(); onChange('rooms'); };
-  $('btnAddHw').onclick = () => { S.hw.consumers.push({ name:'', unit:'чел.', count:'', qDay:'', qHour:'' }); renderHw(); onChange('hw'); };
+  $('btnAddRoom').onclick = () => { const l = S.rooms[S.rooms.length-1]; S.rooms.push({ name:'Литер ' + String.fromCharCode(1040 + Math.min(S.rooms.length, 31)), V:'', tIn: l ? l.tIn : 20, qo: l ? l.qo : '' }); renderRooms(); onChange('rooms'); };
   $('btnAddBoil').onclick = () => { S.boilers.push({ type:'Водогрейный', model:'', P:'', eff:92, n:1 }); renderBoilers(); onChange('boilers'); };
   $('monthsManual').onchange = e => {
     S.monthsManual = e.target.checked;
-    if (S.monthsManual) S.monthsData = RES.monthly.map(m => ({ nHeat:m.nHeat, tHeat:m.tHeat == null ? '' : m.tHeat, nSummer:m.nSummer }));
+    if (S.monthsManual) S.monthsData = RES.monthly.map(m => ({ nHeat:m.nHeat, tHeat:m.tHeat == null ? '' : m.tHeat }));
     renderMonths(); refreshInputs($('monthsTable')); onChange('monthsManual');
   };
   $('btnMonthsReset').onclick = () => {
     const a = compute({ ...S, monthsManual:false });
-    S.monthsData = a.monthly.map(m => ({ nHeat:m.nHeat, tHeat:m.tHeat == null ? '' : m.tHeat, nSummer:m.nSummer }));
+    S.monthsData = a.monthly.map(m => ({ nHeat:m.nHeat, tHeat:m.tHeat == null ? '' : m.tHeat }));
     renderMonths(); refreshInputs($('monthsTable')); onChange('monthsData');
   };
   $('citySelect').onchange = e => {
     const v = e.target.value; if (!v) return;
     const c = allCities().find(x => (x[6] ? 'u:' : 's:') + x[1] === v); if (!c) return;
-    Object.assign(S.climate, { city:c[1], tDesign:c[2], tVent:c[2], nHeat:c[3], tAvgHeat:c[4], months:c[5].slice() });
+    Object.assign(S.climate, { city:c[1], tDesign:c[2], nHeat:c[3], tAvgHeat:c[4], months:c[5].slice() });
     refreshInputs($('tab-src')); onChange('climate');
   };
   $('btnSaveCity').onclick = () => {
